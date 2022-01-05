@@ -23,20 +23,6 @@ cores = multiprocessing.cpu_count()
 print("Number of CPU cores: ", cores)
 print()
 
-# =============================================================================
-# file_path = r'D:/ML_projects/Word Vectors/sample_data/sample_50.pkl'
-# file = pd.read_pickle(file_path)
-# file_path = file.to_list()
-# 
-# 
-# w2v = Word2Vec_model(sg = 0, min_count = 0, size = 10, sentence_istxt = False)
-# model = w2v.train_model(file_path)
-# 
-# w2v.save_model(r'qq', model)
-# 
-# w2v.save_keyed_vectors('mmm', model)
-# =============================================================================
-
 def train(args):
     '''
     This function will be called by the main function.
