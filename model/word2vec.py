@@ -14,8 +14,8 @@ class Word2Vec_model:
         Word2Vec class.
 
         Training can be done in two of the following modes:
-            - Skipgram (Code : 0).
-            - CBOW (Code : 1).
+            - Skipgram (Code : 1).
+            - CBOW (Code : 0).
         In training mode, the input file must be provided in either of the two formats:
             - Text file.
                 Here, each line is a sentence and its tokens are separated by a whitespace.
