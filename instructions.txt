@@ -1,0 +1,12 @@
+Follow the instructions before training Word2Vec.
+    - Lemmatize (if possible).
+    - Remove stopwords.
+    - Remove non-aphabetic characters.
+
+Parameters of the training:
+    - total_examples = int - Count of sentences;
+    - epochs = int - Number of iterations (epochs) over the corpus - [10, 20, 30]
+
+To run the training:
+ python main.py "sample_data/sample_50.txt" --txt_file --save_model --min_count 2 --negative 15 --num_iterations 10 --random_state 100 --window 6
+
