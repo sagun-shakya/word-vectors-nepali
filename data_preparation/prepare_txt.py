@@ -11,7 +11,7 @@ import pandas as pd
 from datetime import datetime
 
 # Local module.
-from utils import *
+from data_preparation.utils import *
 
 #%% Filename: "D:/ML_projects/Word Vectors/sample_data/Merged_series_2.pkl"
 """
@@ -63,3 +63,16 @@ out_filename = root_dir + '/' + 'Merged_series_2__setopati_all_' + date + ".txt"
 
 # Concatenate the contents.
 concat_text_files(path_filenames = filenames, outputfile_path = out_filename)
+
+#%% Stem Merged_series_2.txt and setopati_all.txt.
+path = 'sample_data/Merged_series_2__setopati_all_2022-01-06.txt'
+dict_path = 'stemmer_files/dictionary.txt'
+suffix_path = 'stemmer_files/suffix.txt'
+
+from stemmer import NepStemmer
+stemmer = NepStemmer(dict_path, suffix_path)
+
+init_df = pd.read_csv(path, encoding="utf-8", header=None)
+init_df = init_df.astype(str)
+
+stemmed_df = init_df.head(6).apply(lambda x: stemmer.stem(x))
