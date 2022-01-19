@@ -6,16 +6,19 @@ Created on Wed Jan  5 18:30:37 2022
 """
 import os
 import errno
-from gensim.models import Word2Vec
+from gensim.models import Word2Vec, FastText
 from gensim.models.word2vec import LineSentence
 
-class Word2Vec_model:
+class PreTrained_Embedding:
     '''
-        Word2Vec class.
+        Class to train embeddings based on two embedding schemes:
+            - Word2Vec.
+            - FastText.
 
         Training can be done in two of the following modes:
             - Skipgram (Code : 1).
             - CBOW (Code : 0).
+            
         In training mode, the input file must be provided in either of the two formats:
             - Text file.
                 Here, each line is a sentence and its tokens are separated by a whitespace.
@@ -27,6 +30,7 @@ class Word2Vec_model:
         Gensim official documentation: https://radimrehurek.com/gensim/models/word2vec.html
   
         Parameters:
+            mode -- 'fasttext' or 'word2vec'.
             sg -- (1 or 0) Whether the training is done under skipgram (or C-BOW). Default = 1 (skipgram).
             sentence_istxt -- Bool. If the sentence to be provided is a txt file. Default = True 
                               (IF False, the sentences must be tokenized and placed in a list.)
@@ -47,6 +51,7 @@ class Word2Vec_model:
     '''
        
     def __init__(self,
+                 mode = 'fasttext',
                  sg = 1,
                  sentence_istxt = True,
                  loss = 0,
@@ -61,7 +66,7 @@ class Word2Vec_model:
                  num_iterations = 5,
                  random_state = 100):
         
-         
+        self.mode = mode 
         self.sg = sg
         self.sentence_istxt = sentence_istxt
         self.loss = loss
@@ -78,7 +83,7 @@ class Word2Vec_model:
         
     def train_model(self, file_path):
         '''
-        Returns a Word2Vec model object.
+        Returns a Word2Vec/FastText model object.
         Can perform further training using .train() method. (See Documentation.)
         
         Parameters:
@@ -98,30 +103,46 @@ class Word2Vec_model:
             sentence = file_path
 
         # Training the Word2Vec model.
-        model = Word2Vec(sentence,
-                         sg = self.sg,
-                         min_count = self.min_count,
-                         window = self.window,
-                         size = self.size,
-                         sample = self.sample,
-                         alpha = self.alpha,
-                         hs = self.loss,
-                         min_alpha = self.min_alpha,
-                         negative = self.negative,
-                         workers = self.workers,
-                         iter = self.num_iterations,
-                         seed = self.random_state)
-
-        return model
         
-
-    def save_model(self, output_dir, model):
+        try:
+            if self.mode == 'word2vec':
+                model = Word2Vec(sentence,
+                                 sg = self.sg,
+                                 min_count = self.min_count,
+                                 window = self.window,
+                                 size = self.size,
+                                 sample = self.sample,
+                                 alpha = self.alpha,
+                                 hs = self.loss,
+                                 min_alpha = self.min_alpha,
+                                 negative = self.negative,
+                                 workers = self.workers,
+                                 iter = self.num_iterations,
+                                 seed = self.random_state)
+                
+            elif self.mode == "fasttext":
+                model = FastText(sentence,
+                                 sg = 0,
+                                 min_count = self.min_count,
+                                 window = self.window,
+                                 size = self.size,
+                                 workers = self.workers,
+                                 iter = self.num_iterations,
+                                 seed = self.random_state)
+            
+            return model
+        
+        except:
+            raise Exception("The mode must be either of 'fasttext' or 'word2vec'.")
+            
+            
+    def save_model(self, output_dir, model, to_append = ''):    
         '''
         Saves the model as a whole.
         
         To load such saved file ("mymodel.bin"), use:
-            from gensim.models import Word2Vec
-            xx = Word2Vec.load("mymodel.bin")
+            from gensim.models import Word2Vec (FastText) as emb
+            xx = emb.load("mymodel.bin")
         
         Parameters:
             output_dir -- Path to the directory to save the file.
@@ -131,14 +152,23 @@ class Word2Vec_model:
             If there is no directory as passed in the argument 'output_dir',
             a new directory will be created as 'output_dir/model_dir' and 
             the file will be saved there.
-
+    
         '''
         dimensions = str(self.size)
-        mode = 'skipgram' if (self.sg == 1) else 'cbow'
+        
+        if self.sg == 1:
+            arch = "skipgram"
+        elif self.sg == 0:
+            if self.mode == "fasttext":
+                arch = ""
+            elif self.mode == "word2vec":
+                arch = "cbow"
+                
+        emb_mode = 'fasttext' if (self.mode == 'fasttext') else 'word2vec' if (self.mode == 'fasttext') else 'fasttext'
         
         # Set filename.
-        output_filename = 'model_word2vec_{}d_{}.bin'.format(dimensions, mode)
-
+        output_filename = 'model_{}_{}d_{}_{}.bin'.format(emb_mode, dimensions, arch, to_append)
+    
         # Check to see if the specified directory exists.
         # If it doesn't exist, make a new directory named "output_dir/model_dir".
         if not os.path.exists(output_dir):
@@ -172,10 +202,10 @@ class Word2Vec_model:
         '''
   
         dimensions = str(self.size)
-        mode = 'skipgram' if (self.sg == 1) else 'cbow'
-        
+        arch = 'skipgram' if (self.sg == 1) else 'cbow'
+        emb_mode = 'fasttext' if (self.mode == 'fasttext') else 'word2vec' if (self.mode == 'fasttext') else 'fasttext'
         # Set filename.
-        output_filename = 'model_word2vec_{}d_{}.wordvectors'.format(dimensions, mode)
+        output_filename = 'model_{}_{}d_{}.wordvectors'.format(emb_mode, dimensions, arch)
 
         # Check to see if the specified directory exists.
         # If it doesn't exist, make a new directory named "output_dir/model_dir".
